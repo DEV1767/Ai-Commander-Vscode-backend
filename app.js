@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 app.use(express.json());
-
+app.set("trust proxy", 1);
 app.use(cookieParser())
 
 
