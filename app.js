@@ -9,10 +9,9 @@ app.use(express.json());
 app.set("trust proxy", 1);
 app.use(cookieParser())
 app.use(cors({
-    origin: ['https://ai-commander-frontend-topaz.vercel.app/'],
+    origin: ['https://ai-commander-frontend-topaz.vercel.app'],
     credentials: true
 }));
-
 app.get("/", (req, res) => {
     res.send("Server is running");
 });
