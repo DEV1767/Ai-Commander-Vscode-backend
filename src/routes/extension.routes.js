@@ -1,8 +1,8 @@
 import { Router } from "express";
-import ExtensionAuth from "../models/extension.code.models";
-import { creatExtensioncode, exchangeExtensioncode } from "../controllers/extension.controller";
-import { apiLimiter } from "../config/ratelimit.config";
-import { verifyJwt } from "../middlewares/auth.middlewares";
+import ExtensionAuth from "../models/extension.code.models.js";
+import { creatExtensioncode, exchangeExtensioncode } from "../controllers/extension.controller.js";
+import { apiLimiter } from "../config/ratelimit.config.js";
+import { verifyJwt } from "../middlewares/auth.middlewares.js";
 
 
 const router = Router()
