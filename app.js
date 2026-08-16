@@ -1,6 +1,8 @@
 import express from "express";
 import authroute from "./src/routes/auth.router.js";
 import extensionroute from "./src/routes/extension.routes.js";
+import airoutes from "./src/routes/ai.routes.js"
+
 
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -25,5 +27,5 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authroute);
 app.use("/api/extension", extensionroute);
-
+app.use("/api/commander", airoutes)
 export default app;
