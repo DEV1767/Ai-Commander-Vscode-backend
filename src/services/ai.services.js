@@ -1,8 +1,6 @@
 import AnalysisResult from "../models/analysis.model.js"
 
 
-import AnalysisResult from "../models/analysis.model.js"
-
 
 export const AnalyseError = async (req, res) => {
     try {
