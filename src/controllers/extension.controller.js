@@ -6,7 +6,7 @@ import ExtensionAuth from "../models/extension.code.models.js"
 
 export const creatExtensioncode = async (req, res) => {
     try {
-        const userId = req.user._id
+        const userId = req.userId   
         const code = crypto.randomBytes(32).toString("hex")
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000)
 
@@ -28,6 +28,8 @@ export const creatExtensioncode = async (req, res) => {
         })
     }
 }
+
+
 
 
 export const exchangeExtensioncode = async (req, res) => {
@@ -61,7 +63,6 @@ export const exchangeExtensioncode = async (req, res) => {
             })
         }
 
-        // ✅ Moved outside the expiry check, runs only for a VALID code
         const user = await User.findById(authRequest.userId)
 
         if (!user) {
@@ -76,7 +77,7 @@ export const exchangeExtensioncode = async (req, res) => {
 
         const accessToken = jwt.sign(
             { userId: user._id },
-            process.env.ACCESS_TOKEN_SECRET,
+            process.env.JWT_ACCESS_SECRET,   
             { expiresIn: "15m" }
         )
 
