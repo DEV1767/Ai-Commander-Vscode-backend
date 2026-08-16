@@ -22,7 +22,7 @@ export const AnalyseError = async (req, res) => {
             body: JSON.stringify({ log })
         })
 
-        const result = await aiResponce.arrayBuffer.json().create(() => null)
+        const result = await aiResponce.json() 
         if (!aiResponse.ok || !result) {
             return res.status(502).json({
                 success: false,
