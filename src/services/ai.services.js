@@ -23,7 +23,7 @@ export const AnalyseError = async (req, res) => {
         })
 
         const result = await aiResponce.json() 
-        if (!aiResponse.ok || !result) {
+        if (!aiResponce.ok || !result) {
             return res.status(502).json({
                 success: false,
                 message: "AI analysis service failed to respond"
