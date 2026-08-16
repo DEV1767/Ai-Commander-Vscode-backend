@@ -7,7 +7,7 @@ const router = Router()
 
 
 router.post("/analyze", verifyJwt, apiLimiter, AnalyseError)
-router.get("/error/vscode", verifyJwt, getVscodeErrors)
+router.get("/errors/vscode", verifyJwt, getVscodeErrors)
 
 
 export default router;
