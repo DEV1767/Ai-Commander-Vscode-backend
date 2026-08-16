@@ -1,12 +1,12 @@
 import crypto from "crypto"
 import jwt from "jsonwebtoken"
 import ExtensionAuth from "../models/extension.code.models.js"
-import User from "../models/user.model.js"
+import { User } from "../models/user.model.js"
 
 
 export const creatExtensioncode = async (req, res) => {
     try {
-        const userId = req.userId   
+        const userId = req.userId
         const code = crypto.randomBytes(32).toString("hex")
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000)
 
@@ -77,7 +77,7 @@ export const exchangeExtensioncode = async (req, res) => {
 
         const accessToken = jwt.sign(
             { userId: user._id },
-            process.env.JWT_ACCESS_SECRET,   
+            process.env.JWT_ACCESS_SECRET,
             { expiresIn: "15m" }
         )
 
