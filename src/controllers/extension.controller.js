@@ -1,7 +1,7 @@
 import crypto from "crypto"
 import jwt from "jsonwebtoken"
 import ExtensionAuth from "../models/extension.code.models.js"
-
+import User from "../models/user.model.js"
 
 
 export const creatExtensioncode = async (req, res) => {
