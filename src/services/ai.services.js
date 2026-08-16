@@ -1,10 +1,13 @@
 import AnalysisResult from "../models/analysis.model.js"
 
 
+import AnalysisResult from "../models/analysis.model.js"
+
+
 export const AnalyseError = async (req, res) => {
     try {
         const userId = req.userId
-        const { log, command, exitcode } = req.body
+        const { log, command, exitCode } = req.body   // ✅ capital C, matches usage below
 
         if (!log) {
             return res.status(400).json({
@@ -22,7 +25,7 @@ export const AnalyseError = async (req, res) => {
             body: JSON.stringify({ log })
         })
 
-        const result = await aiResponce.json() 
+        const result = await aiResponce.json()
         if (!aiResponce.ok || !result) {
             return res.status(502).json({
                 success: false,
@@ -76,3 +79,4 @@ export const getVscodeErrors = async (req, res) => {
         })
     }
 }
+
