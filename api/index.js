@@ -1,4 +1,4 @@
-import app from "../src/app.js";
+import app from "../app.js";
 import connect_db from "../src/config/db.js";
 import { connectRedis } from "../src/config/redis.config.js";
 
