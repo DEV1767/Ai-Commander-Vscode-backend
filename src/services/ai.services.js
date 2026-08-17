@@ -1,11 +1,10 @@
 import AnalysisResult from "../models/analysis.model.js"
-
-
+import { setRedis, getRedis, deleteRedis } from "../utils/redis.helper.js"
 
 export const AnalyseError = async (req, res) => {
     try {
         const userId = req.userId
-        const { log, command, exitCode } = req.body   // ✅ capital C, matches usage below
+        const { log, command, exitCode } = req.body
 
         if (!log) {
             return res.status(400).json({
@@ -43,7 +42,7 @@ export const AnalyseError = async (req, res) => {
             explanation: result.explanation,
             prevention: result.prevention
         })
-
+        await deleteRedis(`vscode:errors:${userId}`);
         return res.status(200).json({
             success: true,
             ...result,
@@ -63,10 +62,22 @@ export const getVscodeErrors = async (req, res) => {
     try {
         const userId = req.userId
 
+        const cacheKey = `vscode:errors:${userId}`
+
+        const cacheResult = await getRedis(cacheKey);
+
+        if (cacheResult) {
+            return res.status(200).json(cacheResult)
+        }
         const results = await AnalysisResult.find({ userId })
             .sort({ createdAt: -1 })
             .limit(50)
 
+        await setRedis(
+            cacheKey,
+            results,
+            5 * 60
+        );
         return res.status(200).json(results)
 
     } catch (error) {
@@ -78,3 +89,46 @@ export const getVscodeErrors = async (req, res) => {
     }
 }
 
+export const deleteAnalysedError = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { id } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+        const deleteError = await AnalysisResult.findOne({
+            _id: id,
+            userId
+        });
+
+        if (!deleteError) {
+            return res.status(404).json({
+                success: false,
+                message: "Analysis not found"
+            });
+        }
+
+
+        await deleteError.deleteOne();
+
+
+        await deleteRedis(`vscode:errors:${userId}`);
+
+        return res.status(200).json({
+            success: true,
+            message: "Error deleted successfully"
+        });
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};

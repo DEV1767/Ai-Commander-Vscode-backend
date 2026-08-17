@@ -1,8 +1,7 @@
 import express from "express";
-import authroute from "./src/routes/auth.router.js";
-import extensionroute from "./src/routes/extension.routes.js";
-import airoutes from "./src/routes/ai.routes.js"
-
+import authroute from "./routes/auth.router.js";
+import extensionroute from "./routes/extension.routes.js";
+import airoutes from "./routes/ai.routes.js";
 
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -10,13 +9,14 @@ import cors from "cors";
 const app = express();
 
 app.use(express.json());
+
 app.set("trust proxy", 1);
 
 app.use(cookieParser());
 
 app.use(
     cors({
-        origin: ["https://ai-commander-frontend-topaz.vercel.app"],
+        origin: "https://ai-commander-frontend-topaz.vercel.app",
         credentials: true,
     })
 );
@@ -27,5 +27,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authroute);
 app.use("/api/extension", extensionroute);
-app.use("/api/commander", airoutes)
+app.use("/api/commander", airoutes);
+
 export default app;

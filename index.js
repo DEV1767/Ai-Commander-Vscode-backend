@@ -1,11 +1,22 @@
-import app from "./app.js";
-import connect_db from "./src/config/db.js";
+import "dotenv/config";
+import express from "express";
+
+import connectDB from "./src/config/db.js";
+import { connectRedis } from "./src/config/redis.config.js";
+
+const app = express();
+
+app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
     try {
-        await connect_db();
+        await connectDB();
+        console.log("MongoDB connected");
+
+        await connectRedis();
+        console.log("Redis connection initialized");
 
         app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);

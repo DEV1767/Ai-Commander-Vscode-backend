@@ -2,8 +2,10 @@ import jwt from "jsonwebtoken"
 import { User } from "../models/user.model.js"
 import { registerSchema, loginSchema } from "../validators/user.validtors.js"
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js"
+import { setRedis, getRedis, deleteRedis } from "../utils/redis.helper.js"
 import bcrypt from "bcrypt"
 import cookieParser from "cookie-parser"
+import { use } from "react"
 
 
 
@@ -89,7 +91,11 @@ export const loginUser = async (req, res) => {
         user.refreshToken = refreshToken;
 
         await user.save();
-
+        await setRedis(
+            `refresh:${user._id}`,
+            refreshToken,
+            7 * 24 * 60 * 60
+        );
         const userData = {
             id: user._id,
             username: user.username,
@@ -128,8 +134,20 @@ export const loginUser = async (req, res) => {
 //get-me
 export const getme = async (req, res) => {
     try {
+
+        const cachekey = `user:${req.userId}`
+
+        const cachedUser = await getRedis(cachekey)
+        if (cachedUser) {
+            return res.status(200).json({
+                success: true,
+                user: cachedUser,
+                source: "cache"
+            })
+        }
+
         const user = await User.findById(req.userId)
-            .select("-password");
+            .select("-password -refreshToken");
 
         if (!user) {
             return res.status(404).json({
@@ -137,6 +155,11 @@ export const getme = async (req, res) => {
                 message: "User not found"
             });
         }
+        await setRedis(
+            cachedkey,
+            user,
+            600
+        )
 
         return res.status(200).json({
             success: true,
@@ -156,7 +179,8 @@ export const getme = async (req, res) => {
 //generate-refresh Token
 export const refreshAccessToken = async (req, res) => {
     try {
-        const { refreshToken } = req.cookie?.refreshToken || req.body?.refreshToken;
+        const refreshToken =
+            req.cookies?.refreshToken || req.body?.refreshToken;
 
         if (!refreshToken) {
             return res.status(401).json({
@@ -179,19 +203,34 @@ export const refreshAccessToken = async (req, res) => {
             });
         }
 
-        if (user.refreshToken !== refreshToken) {
+
+        const storedToken = await getRedis(
+            `refresh:${user._id}`
+        );
+
+        if (!storedToken || storedToken !== refreshToken) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid refresh token"
             });
         }
 
+
         const newAccessToken = generateAccessToken(user._id);
         const newRefreshToken = generateRefreshToken(user._id);
 
-        user.refreshToken = newRefreshToken;
 
+        user.refreshToken = newRefreshToken;
         await user.save();
+
+
+        await setRedis(
+            `refresh:${user._id}`,
+            newRefreshToken,
+            7 * 24 * 60 * 60
+        );
+
+
         res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -200,10 +239,10 @@ export const refreshAccessToken = async (req, res) => {
                 : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
+
         return res.status(200).json({
             success: true,
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken
+            accessToken: newAccessToken
         });
 
     } catch (error) {
@@ -215,7 +254,6 @@ export const refreshAccessToken = async (req, res) => {
         });
     }
 };
-
 //logout
 export const logoutuser = async (req, res) => {
     try {
@@ -230,6 +268,14 @@ export const logoutuser = async (req, res) => {
         user.refreshToken = null;
         await user.save()
 
+        await deleteRedis(`refresh: ${user._id}`)
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production"
+                ? "none"
+                : "lax"
+        });
         return res.status(200).json({
             success: true,
             message: "Logout Successful"
