@@ -155,7 +155,7 @@ export const getme = async (req, res) => {
             });
         }
         await setRedis(
-            cachedkey,
+            cachekey,
             user,
             600
         )
