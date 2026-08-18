@@ -34,13 +34,17 @@ export const AnalyseError = async (req, res) => {
             command,
             exitCode,
             raw_text: result.raw_text,
+            category: result.category,
             error: result.error,
             description: result.description,
             risk: result.risk,
             logs: result.logs,
             tech_stack: result.tech_stack,
             explanation: result.explanation,
-            prevention: result.prevention
+            prevention: result.prevention,
+            quick_fix: result.quick_fix,
+            quick_explanation: result.quick_explanation,
+            has_fix: result.has_fix
         })
         await deleteRedis(`vscode:errors:${userId}`);
         return res.status(200).json({

@@ -13,13 +13,18 @@ const analysisResultSchema = new mongoose.Schema(
         exitCode: { type: Number },
 
         raw_text: { type: String },
+        category: { type: String },
         error: { type: String },
         description: { type: String },
         risk: { type: String },
         logs: { type: String },
         tech_stack: { type: String },
         explanation: { type: String },
-        prevention: { type: String }
+        prevention: { type: String },
+
+        quick_fix: { type: String },
+        quick_explanation: { type: String },
+        has_fix: { type: Boolean }
     },
     {
         timestamps: true
