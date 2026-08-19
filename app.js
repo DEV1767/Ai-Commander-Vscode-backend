@@ -15,9 +15,31 @@ app.set("trust proxy", 1);
 
 app.use(cookieParser());
 
+const ALLOWED_ORIGINS = [
+    "https://ai-commander-frontend-topaz.vercel.app"
+];
+
 app.use(
     cors({
-        origin: ["https://ai-commander-frontend-topaz.vercel.app"],
+        origin: (origin, callback) => {
+            // No origin (e.g. curl, server-to-server, or Node's own fetch
+            // from extension.ts) — allow it.
+            if (!origin) return callback(null, true);
+
+            // Known frontend — allow with credentials.
+            if (ALLOWED_ORIGINS.includes(origin)) {
+                return callback(null, true);
+            }
+
+            // VS Code webview origins look like vscode-webview://<id>
+            // They're per-session/random, so we match the scheme instead
+            // of an exact string.
+            if (origin.startsWith("vscode-webview://")) {
+                return callback(null, true);
+            }
+
+            callback(new Error("Not allowed by CORS"));
+        },
         credentials: true
     })
 );
