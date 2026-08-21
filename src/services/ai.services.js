@@ -136,3 +136,58 @@ export const deleteAnalysedError = async (req, res) => {
         });
     }
 };
+
+// Proxies to the Python backend's /suggest-fix. Unlike AnalyseError,
+// this does NOT save anything to the database — it's a stateless
+// "given this file content, suggest a fix" call, invoked by the VS
+// Code extension only after it has already read the local file.
+export const suggestFix = async (req, res) => {
+    try {
+        const { error, logs, description, tech_stack, file_path, file_content } = req.body
+
+        if (!error || !file_path || !file_content) {
+            return res.status(400).json({
+                success: false,
+                message: "error, file_path, and file_content are required"
+            })
+        }
+
+        const url = "https://ai-commander-psi.vercel.app/suggest-fix"
+
+        const aiResponse = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                error,
+                logs: logs || "",
+                description: description || "",
+                tech_stack: tech_stack || "",
+                file_path,
+                file_content
+            })
+        })
+
+        const result = await aiResponse.json().catch(() => null)
+
+        if (!aiResponse.ok || !result) {
+            return res.status(aiResponse.status || 502).json({
+                success: false,
+                message: result?.detail || "AI suggest-fix service failed to respond"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            ...result
+        })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            success: false,
+            message: "Failed to suggest fix"
+        })
+    }
+}
